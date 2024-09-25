@@ -43,16 +43,33 @@ class DVRouter(Router):
     # (1) the distance vector advertisement that it is receiving (dv_adv)
     # (2) and the router that is advertising this distance vector (adv_router)
     def process_advertisement(self, dv_adv, adv_router):
+        print(dv_adv)
+        print(self.router_id)
         # TODO: Implement this using the instructions below.
         # (1) Iterate through all destinations in this router's distance vector (self.dv).
         # If this destination is also in the dv_adv that you just received,
         # check if you can find a better path to the destination through adv_router
+        for id, dist in self.dv.items():
+            if id in dv_adv.keys():
+                if dist > self.links[adv_router] + dv_adv[id]:
+                    self.dv[id] = self.links[adv_router] + dv_adv[id]
+                    self.dv_change = True
+                    self.fwd_table[id] = adv_router
+
         # (2) Iterate through all destinations in the just received distance vector (dv_adv),
         # which are not in this router's current distance vector (self.dv)
         # , i.e., this router's current distance to them is infinity.
         # For such destinations, you should update the distance vector and next hop information
         # to use adv_router because the current distance is infinity.
-        # (3) Make sure you update self.fwd_table[dst] to reflect the current best choice
+
+        for id, vec in dv_adv.items():
+            if id not in self.dv.keys():
+                self.dv[id] = self.links[adv_router] + vec
+                self.fwd_table[id] = adv_router
+                self.dv_change = True
+                
+
+
+       # (3) Make sure you update self.fwd_table[dst] to reflect the current best choice
         # of next hop to destination dst. simulator.py uses this to check your implementation.
 
-        pass
