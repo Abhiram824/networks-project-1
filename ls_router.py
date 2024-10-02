@@ -72,9 +72,24 @@ class LSRouter(Router):
         # have populated the prev dictionary which maps a destination to the penultimate hop
         # on the shortest path to this destination from this router.
 
-        confirmed = [self]
+        tentative = [(self,0, self)]
+        confirmed = {}
+        while len(tentative) > 0:
+            tentative = sorted(tentative, key=lambda x: x[1])
+            next = tentative.pop(0)
+            if next[0] in confirmed:
+                continue
+            confirmed[next[0]] = next[2]
+            for neighbor in next[0].neighbors:
+                if neighbor in confirmed:
+                    continue
+                tentative.append((neighbor, next[1] + next[0].links[neighbor.router_id], next[0]))
         
-        pass
+        prev = {key.router_id: confirmed[key].router_id for key in confirmed}
+        for key in prev:
+            if key == self.router_id:
+                continue
+            self.fwd_table[key] = self.next_hop(key, prev)
 
     # Recursive function for computing next hops using the prev dictionary
     def next_hop(self, dst, prev):
