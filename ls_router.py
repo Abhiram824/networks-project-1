@@ -1,8 +1,10 @@
 # Base router class
 from router import Router
+# import priority queue
+from queue import PriorityQueue
 
 # This is long enough so that broadcasts complete even on large topologies
-BROADCAST_INTERVAL = 1000
+BROADCAST_INTERVAL = 10
 
 
 # Class representing link state routers
@@ -71,19 +73,22 @@ class LSRouter(Router):
         # (3) If it helps, you can use the helper function next_hop below to compute the next hop once you
         # have populated the prev dictionary which maps a destination to the penultimate hop
         # on the shortest path to this destination from this router.
-
-        tentative = [(self,0, self)]
+        # needed when there are two paths of same size
+        counter = 0
+        tentative = PriorityQueue()
+        tentative.put((0, counter, self, self))
+        counter += 1
         confirmed = {}
-        while len(tentative) > 0:
-            tentative = sorted(tentative, key=lambda x: x[1])
-            next = tentative.pop(0)
-            if next[0] in confirmed:
+        while tentative.qsize() > 0:
+            next = tentative.get()
+            if next[2] in confirmed:
                 continue
-            confirmed[next[0]] = next[2]
-            for neighbor in next[0].neighbors:
+            confirmed[next[2]] = next[3]
+            for neighbor in next[2].neighbors:
                 if neighbor in confirmed:
                     continue
-                tentative.append((neighbor, next[1] + next[0].links[neighbor.router_id], next[0]))
+                tentative.put((next[0] + next[2].links[neighbor.router_id], counter, neighbor,  next[2]))
+                counter += 1
         
         prev = {key.router_id: confirmed[key].router_id for key in confirmed}
         for key in prev:
