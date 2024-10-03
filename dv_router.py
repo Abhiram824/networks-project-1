@@ -43,8 +43,6 @@ class DVRouter(Router):
     # (1) the distance vector advertisement that it is receiving (dv_adv)
     # (2) and the router that is advertising this distance vector (adv_router)
     def process_advertisement(self, dv_adv, adv_router):
-        print(dv_adv)
-        print(self.router_id)
         # TODO: Implement this using the instructions below.
         # (1) Iterate through all destinations in this router's distance vector (self.dv).
         # If this destination is also in the dv_adv that you just received,
